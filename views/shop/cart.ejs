@@ -22,6 +22,11 @@
                 <% } %>
             </div>
               <h1>Total: $<%= cart.total %></h1>
+              <div class="centered">
+                <form action="/orders" method="post">
+                  <button type="submit" class="btn">Order</button>
+                </form>
+              </div>
             <% } else {%>
             <h1>No Products Found!</h1>
             <% }%>

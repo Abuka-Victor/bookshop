@@ -120,10 +120,43 @@ exports.postToCart = (req, res, next) => {
 };
 
 exports.getOrders = (req, res, next) => {
-    res.render('shop/orders', {
-        path: '/orders',
-        pageTitle: 'Your Orders',
-    });
+    req.user
+        .getOrders({ include: 'products' })
+        .then((orders) => {
+            res.render('shop/orders', {
+                path: '/orders',
+                orders: orders,
+                pageTitle: 'Your Orders',
+            });
+        })
+        .catch((err) => console.log(err));
+};
+
+exports.postOrder = (req, res, next) => {
+    let fetchedCart;
+    req.user
+        .getCart({ include: 'products' })
+        .then((cart) => {
+            fetchedCart = cart;
+        })
+        .then(() => {
+            req.user
+                .createOrder()
+                .then((order) => {
+                    fetchedCart.products.forEach((product) => {
+                        order.addProduct(product, {
+                            through: { qty: product.cartItem.qty },
+                        });
+                    });
+                })
+                .then(() => {
+                    fetchedCart.setProducts(null);
+                });
+        })
+        .then(() => {
+            res.redirect('/orders');
+        })
+        .catch((err) => console.log(err));
 };
 
 exports.getCheckout = (req, res, next) => {
